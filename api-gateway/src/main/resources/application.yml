@@ -1,0 +1,86 @@
+spring:
+  main:
+    web-application-type: reactive
+    allow-bean-definition-overriding: true
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: seller-portal-service
+              uri: lb://seller-portal-service
+              predicates:
+                - Path=/api/seller/**
+
+            - id: auth-service
+              uri: lb://auth-service
+              predicates:
+                - Path=/api/auth/**
+
+            - id: product-service
+              uri: lb://product-service
+              predicates:
+                - Path=/api/product/**
+
+            - id: product-service-seller
+              uri: lb://product-service
+              predicates:
+                - Path=/api/product/seller/**
+              metadata:
+                internal: true
+
+            - id: order-service
+              uri: lb://order-service
+              predicates:
+                - Path=/api/orders/**
+
+            - id: cart-service
+              uri: lb://cart-service
+              predicates:
+                - Path=/api/cart/**
+
+            - id: profile-service
+              uri: lb://profile-service
+              predicates:
+                - Path=/api/profile/**
+
+            - id: inventory-service
+              uri: lb://inventory-service
+              predicates:
+                - Path=/api/inventory/**
+              metadata:
+                internal: true
+          discovery:
+            locator:
+              lower-case-service-id: true
+              enabled: true
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
+    registry-fetch-interval-seconds: 5
+  instance:
+    appname: api-gateway
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+request:
+  internal:
+    secret: ${X_INTERNAL_REQUEST_SECRET}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+  refresh-token:
+    expiration: ${JWT_REFRESH_EXPIRATION}
+
+server:
+  port: 8070
+  forward-headers-strategy: framework
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

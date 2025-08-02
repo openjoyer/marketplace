@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: auth-service
+  data:
+    redis:
+      host: redis
+      port: 6379
+  cache:
+    type: redis
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all # Гарантированная запись
+      retries: 3
+      properties:
+        spring:
+          json:
+            add:
+              type:
+                headers: false
+        delivery.timeout.ms: 120000
+        request.timeout.ms: 90000
+        max.block.ms: 60000
+
+server:
+  port: 8080
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
+  instance:
+    appname: auth-service
+    hostname: localhost
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000
+  refresh-token:
+    expiration: 604800000 # 7 days
+#app:
+#  email-confirmation:
+#    expiry-hours: 3

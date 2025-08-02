@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: order-service
+  data:
+    mongodb:
+      host: mongodb
+      port: 27017
+      database: ${MONGO_DB_DATABASE}
+      username: ${MONGO_DB_USER}
+      password: ${MONGO_DB_PASSWORD}
+      authentication-database: admin
+      auto-index-creation: true
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all # Гарантированная запись
+      retries: 3
+      properties:
+        spring:
+          json:
+            add:
+              type:
+                headers: false
+        delivery.timeout.ms: 120000
+        request.timeout.ms: 90000
+        max.block.ms: 60000
+    listener:
+      ack-mode: manual
+    consumer:
+      group-id: notification-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.trusted.packages: "*"
+        max.poll.interval.ms: 300000 # 5 минут
+        session.timeout.ms: 10000
+server:
+  port: 8080
+app:
+  internal:
+    secret: ${X_INTERNAL_REQUEST_SECRET}
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15

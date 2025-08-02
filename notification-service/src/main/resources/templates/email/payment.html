@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirm email</title>
+</head>
+<body>
+<h1>Payment for order <span th:text="${orderId}">id</span></h1>
+<p>To continue payment please click on link below</p>
+<a th:href="${paymentLink}" th:text="${paymentLink}">Link</a>
+</body>
+</html>

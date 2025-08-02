@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: notification-service
+  data:
+    mongodb:
+      host: mongodb
+      port: 27017
+      database: ${MONGO_DB_DATABASE}
+      username: ${MONGO_DB_USER}
+      password: ${MONGO_DB_PASSWORD}
+      authentication-database: admin  # Для аутентификации
+      auto-index-creation: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_SMTP_MAIL}
+    password: ${GMAIL_SMTP_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      "[mail.smtp.connectiontimeout]": 5000
+      "[mail.smtp.timeout]": 3000
+      "[mail.smtp.writetimeout]": 5000
+  kafka:
+    listener:
+      ack-mode: manual
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: notification-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.trusted.packages: "*"
+        max.poll.interval.ms: 300000 # 5 минут
+        session.timeout.ms: 10000
+
+server:
+  port: 8080
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
+  instance:
+    appname: notification-service
+    hostname: localhost
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+logging:
+  level:
+    org:
+      springframework:
+        mail: DEBUG

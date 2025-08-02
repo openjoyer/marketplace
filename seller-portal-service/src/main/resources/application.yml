@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: seller-portal-service
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 3
+      properties:
+        spring:
+          json:
+            add:
+              type:
+                headers: false
+        delivery.timeout.ms: 120000
+        request.timeout.ms: 90000
+        max.block.ms: 60000
+server:
+  port: 8080
+
+app:
+  internal:
+    secret: ${X_INTERNAL_REQUEST_SECRET}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+
