@@ -71,7 +71,6 @@ public class AuthFilter implements GlobalFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String url = exchange.getRequest().getURI().getPath();
-        System.out.println("___________url: " + url);
 
         if (URL_WHITE_LIST.stream().anyMatch(url::startsWith)) {
             return chain.filter(exchange);

@@ -19,7 +19,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @GetMapping("/proceed")
-    public ResponseEntity<PaymentStatus> paymentProceed(@RequestParam("order") String orderId) {
+    public ResponseEntity<String> paymentProceed(@RequestParam("order") String orderId) {
         PaymentStatus status = paymentService.confirmPayment(orderId);
         if (status == PaymentStatus.SUCCEEDED) {
             log.info("Payment successful: {}", orderId);
@@ -30,9 +30,12 @@ public class PaymentController {
         else if (status == PaymentStatus.EXPIRED) {
             log.info("Payment expired: {}", orderId);
         }
+        else if (status == PaymentStatus.ALREADY_COMPLETED) {
+            log.info("Payment already completed: {}", orderId);
+        }
         else {
             log.error("Payment is null: {}", orderId);
         }
-        return new ResponseEntity<>(status, HttpStatus.OK);
+        return new ResponseEntity<>(status.toString(), HttpStatus.OK);
     }
 }

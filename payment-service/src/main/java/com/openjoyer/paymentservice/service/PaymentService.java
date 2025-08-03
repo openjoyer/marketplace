@@ -27,6 +27,9 @@ public class PaymentService {
      * Mock payment creating -> sends an email to pay
      */
     public void create(OrderEvent order) {
+        if (paymentRepository.existsByOrderId(order.getId())) {
+            return;
+        }
         LocalDateTime now = LocalDateTime.now();
         List<PaymentItem> paymentItems = orderServiceClient.getOrderItems(order.getId()).stream()
                 .map(i -> new PaymentItem(i.getProductId(), i.getSellerId(), i.getPrice(), i.getQuantity()))
@@ -54,15 +57,21 @@ public class PaymentService {
         }
     }
 
-    public Payment getById(String id) {
-        return paymentRepository.findById(id).orElse(null);
+    public Payment getByOrderId(String id) {
+        return paymentRepository.findByOrderId(id).orElse(null);
     }
 
 
     public PaymentStatus confirmPayment(String orderId) {
-        Payment payment = getById(orderId);
+        Payment payment = getByOrderId(orderId);
         if (payment == null) {
             return null;
+        }
+        if (payment.getStatus() == PaymentStatus.CANCELLED) {
+            return PaymentStatus.CANCELLED;
+        }
+        if (payment.getStatus() == PaymentStatus.SUCCEEDED) {
+            return PaymentStatus.ALREADY_COMPLETED;
         }
         LocalDateTime expired = payment.getExpireTimestamp();
         if (expired.isBefore(LocalDateTime.now())) {
