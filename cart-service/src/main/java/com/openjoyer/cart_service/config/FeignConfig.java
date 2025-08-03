@@ -15,7 +15,8 @@ public class FeignConfig {
     @Bean
     public RequestInterceptor internalAuthInterceptor() {
         return requestTemplate -> {
-            if (requestTemplate.url().contains("/api/product/internal")) {
+            if (requestTemplate.url().contains("/api/product/internal") ||
+                    requestTemplate.url().contains("/api/inventory/internal")) {
                 String key = env.getProperty("app.internal.secret");
                 requestTemplate.header("X-Internal-Request", key);
             }

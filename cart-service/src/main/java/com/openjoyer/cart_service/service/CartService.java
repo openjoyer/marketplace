@@ -2,7 +2,9 @@ package com.openjoyer.cart_service.service;
 
 import com.openjoyer.cart_service.dto.CartItemRequest;
 import com.openjoyer.cart_service.dto.CartResponse;
+import com.openjoyer.cart_service.dto.Inventory;
 import com.openjoyer.cart_service.event.PaymentEvent;
+import com.openjoyer.cart_service.feign_clients.InventoryServiceClient;
 import com.openjoyer.cart_service.feign_clients.ProductServiceClient;
 import com.openjoyer.cart_service.model.Cart;
 import com.openjoyer.cart_service.model.CartItem;
@@ -19,13 +21,17 @@ import java.util.List;
 public class CartService {
     private final CartRepository cartRepository;
     private final ProductServiceClient productServiceClient;
+    private final InventoryServiceClient inventoryServiceClient;
 
     public CartResponse addItemToCart(CartItemRequest cartItemRequest, String userId) {
+        Inventory inventory = inventoryServiceClient.getInventoryInternal(cartItemRequest.getProductId()).getBody();
+        if (inventory != null && inventory.getAvailableQuantity() < cartItemRequest.getQuantity()) {
+            return null;
+        }
         Cart cart = cartRepository.findByUserId(userId);
         if (cart == null) {
             cart = new Cart(userId);
         }
-
         CartItem item = new CartItem();
         item.setProductId(cartItemRequest.getProductId());
 

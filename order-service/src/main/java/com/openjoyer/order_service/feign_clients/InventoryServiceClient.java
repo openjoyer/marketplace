@@ -15,7 +15,7 @@ import java.util.List;
         configuration = FeignConfig.class
 )
 public interface InventoryServiceClient {
-    @PostMapping("/api/inventory/reserve")
+    @PostMapping("/api/inventory/internal/reserve")
     ResponseEntity<List<CartItem>> reserve(@RequestHeader("X-User-Id") String userId,
                                            @RequestBody List<CartItem> items);
 }

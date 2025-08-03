@@ -16,21 +16,13 @@ import org.springframework.web.bind.annotation.*;
 public class CartController {
     private final CartService cartService;
 
-//    @PostMapping("/create-order")
-//    public ResponseEntity<?> processOrder(@RequestHeader("X-User-Id") String userId) {
-//        boolean isDone = cartService.processCart(userId);
-//        if (isDone) {
-//            return ResponseEntity.ok().build();
-//        }
-//        else {
-//            return ResponseEntity.badRequest().build();
-//        }
-//    }
-
     @PostMapping
-    public ResponseEntity<CartResponse> addToCart(@RequestHeader("X-User-Id") String userId,
+    public ResponseEntity<?> addToCart(@RequestHeader("X-User-Id") String userId,
                                                   @RequestBody CartItemRequest cartItem) {
         CartResponse cart = cartService.addItemToCart(cartItem, userId);
+        if (cart == null) {
+            return new ResponseEntity<>("Seller doesn't have this amount of items", HttpStatus.BAD_REQUEST);
+        }
         return new ResponseEntity<>(cart, HttpStatus.OK);
     }
 

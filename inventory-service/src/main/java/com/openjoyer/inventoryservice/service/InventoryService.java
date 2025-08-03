@@ -134,4 +134,8 @@ public class InventoryService {
                 .build();
         inventoryRepository.save(inventory);
     }
+
+    public Inventory getByProductId(String productId) {
+        return inventoryRepository.findByProductId(productId).orElse(null);
+    }
 }

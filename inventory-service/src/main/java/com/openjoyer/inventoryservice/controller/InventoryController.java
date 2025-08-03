@@ -21,10 +21,23 @@ public class InventoryController {
 
     private final InventoryService service;
 
-    @GetMapping
-    public ResponseEntity<?> getAvailable(@RequestHeader("X-User-Id") String userId) {
-        List<Inventory> inventories = service.getInventoryBySellerId(userId);
+    @GetMapping("/all")
+    public ResponseEntity<?> getAvailable(@RequestHeader("X-User-Id") String sellerId) {
+        List<Inventory> inventories = service.getInventoryBySellerId(sellerId);
         return ResponseEntity.ok(inventories);
+    }
+
+    @GetMapping
+    public ResponseEntity<Inventory> getInventory(@RequestHeader("X-User-Id") String sellerId,
+                                          @RequestParam("product") String productId) {
+        Inventory inventory = service.getByProductId(productId);
+        return ResponseEntity.ok(inventory);
+    }
+
+    @GetMapping("/internal")
+    public ResponseEntity<Inventory> getInventoryInternal(@RequestParam("product") String productId) {
+        Inventory inventory = service.getByProductId(productId);
+        return ResponseEntity.ok(inventory);
     }
 
     @PostMapping
@@ -37,7 +50,7 @@ public class InventoryController {
 //        service.processOrder();
 //    }
 
-    @PostMapping("/reserve")
+    @PostMapping("/internal/reserve")
     public ResponseEntity<List<CartItem>> reserve(@RequestHeader("X-User-Id") String userId,
                                                   @RequestBody List<CartItem> items) {
         Map<Boolean, List<CartItem>> l = service.getReserveItems(items);
