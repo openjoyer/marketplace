@@ -62,7 +62,7 @@ public class KafkaService {
             log.info("Received payment event: {}", payment.getId());
 
             Context context = new Context();
-            context.setVariable("orderId", payment.getOrderId());
+            context.setVariable("orderId", payment.getOrderId().substring(0, 8));
             String link = "http://localhost:8070/api/payment/proceed?order=" + payment.getOrderId();
             context.setVariable("paymentLink", link);
             String html = templateEngine.process("email/payment.html", context);

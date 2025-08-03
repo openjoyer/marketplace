@@ -60,12 +60,9 @@ public class ProfileController {
     }
 
     @GetMapping("/confirmation-token")
-    public ResponseEntity<Profile> getByConfirmationToken(@RequestParam("token") String token) {
+    public Profile getByConfirmationToken(@RequestParam("token") String token) {
         Profile profile = profileService.getProfileByConfirmationToken(token);
-        if (profile == null) {
-            return new ResponseEntity<>(profile, HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(profile, HttpStatus.OK);
+        return profile;
     }
 
     @GetMapping("/email/verified")

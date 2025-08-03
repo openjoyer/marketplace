@@ -115,14 +115,13 @@ public class AuthController {
 
     @GetMapping("/confirm-email/proceed")
     public ResponseEntity<?> confirmationEmailProceed(@RequestParam("token") String token) {
-        Profile user = profileServiceClient.getByConfirmationToken(token).getBody();
+        Profile user = profileServiceClient.getByConfirmationToken(token);
+
         if (user == null) {
-            ResponseHandler h = new ResponseHandler(404, "Invalid token", LocalDateTime.now());
-            return new ResponseEntity<>(h, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Invalid token", HttpStatus.NOT_FOUND);
         }
         if (user.getConfirmationTokenExpiry().isBefore(LocalDateTime.now())) {
-            ResponseHandler h = new ResponseHandler(400, "Token expired", LocalDateTime.now());
-            return new  ResponseEntity<>(h, HttpStatus.BAD_REQUEST);
+            return new  ResponseEntity<>("Token expired", HttpStatus.BAD_REQUEST);
         }
 
         user.setEmailVerified(true);

@@ -1,15 +1,19 @@
 package com.openjoyer.authservice.feign_clients;
 
+import com.openjoyer.authservice.config.FeignConfig;
 import com.openjoyer.authservice.model.Profile;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "profile-service")
+@FeignClient(
+        name = "profile-service",
+        configuration = FeignConfig.class
+)
 public interface ProfileServiceClient {
 
     @GetMapping("/api/profile/confirmation-token")
-    ResponseEntity<Profile> getByConfirmationToken(@RequestParam("token") String token);
+    Profile getByConfirmationToken(@RequestParam("token") String token);
 
     @GetMapping("/api/profile")
     ResponseEntity<?> getProfile(@RequestHeader("X-User-Id") String id);

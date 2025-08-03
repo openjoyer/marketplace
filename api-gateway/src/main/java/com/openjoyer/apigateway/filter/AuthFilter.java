@@ -46,12 +46,11 @@ public class AuthFilter implements GlobalFilter {
             "/api/auth/logout",
             "/api/product/seller",
             "/api/cart",
-            "/api/orders",
             "/api/profile",
             "/api/inventory"
     );
     private final List<String> EMAIL_VERIFIED_URL_LIST = List.of(
-            "/api/cart/create-order"
+            "/api/orders"
     );
     private final List<String> URL_INTERNAL_LIST = List.of(
             "/api/product/internal",
@@ -61,7 +60,8 @@ public class AuthFilter implements GlobalFilter {
             "/api/orders/internal",
             "/api/inventory/reserve",
             "/api/product/seller",
-            "/api/orders/seller"
+            "/api/orders/seller",
+            "/api/profile/confirmation-token"
     );
     private final String SELLER_PORTAL_URL = "/api/seller";
 
@@ -71,8 +71,12 @@ public class AuthFilter implements GlobalFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String url = exchange.getRequest().getURI().getPath();
+        System.out.println("___________url: " + url);
 
-        if (URL_INTERNAL_LIST.stream().anyMatch(url::startsWith)) {
+        if (URL_WHITE_LIST.stream().anyMatch(url::startsWith)) {
+            return chain.filter(exchange);
+        }
+        else if (URL_INTERNAL_LIST.stream().anyMatch(url::startsWith)) {
             String internalHeader = exchange.getRequest()
                     .getHeaders()
                     .getFirst("X-Internal-Request");
@@ -105,9 +109,6 @@ public class AuthFilter implements GlobalFilter {
                 return exchange.getResponse().setComplete();
             }
             return getEmailVerified(token, exchange, chain);
-        }
-        else if (URL_WHITE_LIST.stream().anyMatch(url::startsWith)) {
-            return chain.filter(exchange);
         }
         else if (EMAIL_VERIFIED_URL_LIST.stream().anyMatch(url::startsWith)){
             String token = extractToken(exchange.getRequest());
