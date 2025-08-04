@@ -9,6 +9,7 @@ import com.openjoyer.paymentservice.model.PaymentStatus;
 import com.openjoyer.paymentservice.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -57,6 +58,25 @@ public class PaymentService {
         }
     }
 
+    @Scheduled(fixedRate = 10000)
+    public void releaseExpiredReservations() {
+        List<Payment> expiredPayments = paymentRepository.findByStatusAndExpireTimestampBefore(
+                        PaymentStatus.CREATED,
+                        LocalDateTime.now()
+                );
+        System.out.println("_______ " +  expiredPayments);
+
+        expiredPayments.forEach(payment -> {
+            payment.setStatus(PaymentStatus.EXPIRED);
+            paymentRepository.save(payment);
+            try {
+                kafkaProducerService.sendPaymentExpired(payment);
+            } catch (JsonProcessingException e) {
+                log.error("payment event failed, order: {} ({})", payment.getOrderId(), e.getMessage());
+            }
+        });
+    }
+
     public Payment getByOrderId(String id) {
         return paymentRepository.findByOrderId(id).orElse(null);
     }
@@ -73,17 +93,20 @@ public class PaymentService {
         if (payment.getStatus() == PaymentStatus.SUCCEEDED) {
             return PaymentStatus.ALREADY_COMPLETED;
         }
-        LocalDateTime expired = payment.getExpireTimestamp();
-        if (expired.isBefore(LocalDateTime.now())) {
-            payment.setStatus(PaymentStatus.EXPIRED);
-            paymentRepository.save(payment);
-            try {
-                kafkaProducerService.sendPaymentExpired(payment);
-            } catch (JsonProcessingException e) {
-                log.error("payment event failed, order: {} ({})", payment.getOrderId(), e.getMessage());
-            }
+        if (payment.getStatus() == PaymentStatus.EXPIRED) {
             return PaymentStatus.EXPIRED;
         }
+//        LocalDateTime expired = payment.getExpireTimestamp();
+//        if (expired.isBefore(LocalDateTime.now())) {
+//            payment.setStatus(PaymentStatus.EXPIRED);
+//            paymentRepository.save(payment);
+//            try {
+//                kafkaProducerService.sendPaymentExpired(payment);
+//            } catch (JsonProcessingException e) {
+//                log.error("payment event failed, order: {} ({})", payment.getOrderId(), e.getMessage());
+//            }
+//            return PaymentStatus.EXPIRED;
+//        }
         payment.setExpireTimestamp(null);
         payment.setStatus(PaymentStatus.SUCCEEDED);
         paymentRepository.save(payment);

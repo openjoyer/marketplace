@@ -34,4 +34,5 @@ public class KafkaProducerService {
         String json = objectMapper.writeValueAsString(payment);
         kafkaTemplate.send("payment-cancelled", json);
     }
+
 }
