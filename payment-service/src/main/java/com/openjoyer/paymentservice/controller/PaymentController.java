@@ -1,5 +1,6 @@
 package com.openjoyer.paymentservice.controller;
 
+import com.openjoyer.paymentservice.exceptions.BalanceException;
 import com.openjoyer.paymentservice.model.Balance;
 import com.openjoyer.paymentservice.model.PaymentStatus;
 import com.openjoyer.paymentservice.service.BalanceService;
@@ -8,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,24 +19,14 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final BalanceService balanceService;
 
-//    @GetMapping("/proceed")
-//    public ResponseEntity<String> paymentProceed(@RequestParam("order") String orderId) {
-//        PaymentStatus status = paymentService.confirmPayment(orderId);
-//        if (status == PaymentStatus.SUCCEEDED) {
-//            log.info("Payment successful: {}", orderId);
-//        }
-//        else if (status == PaymentStatus.CANCELLED) {
-//            log.info("Payment cancelled: {}", orderId);
-//        }
-//        else if (status == PaymentStatus.EXPIRED) {
-//            log.info("Payment expired: {}", orderId);
-//        }
-//        else if (status == PaymentStatus.ALREADY_COMPLETED) {
-//            log.info("Payment already completed: {}", orderId);
-//        }
-//        else {
-//            log.error("Payment is null: {}", orderId);
-//        }
-//        return new ResponseEntity<>(status.toString(), HttpStatus.OK);
-//    }
+    @PostMapping("/balance")
+    public ResponseEntity<Balance> creditMoney(@RequestHeader("X-User-Id") String userId,
+                                               @RequestBody double amount) {
+        return new ResponseEntity<>(balanceService.incrementBalance(userId, amount), HttpStatus.OK);
+    }
+
+    @GetMapping("/balance")
+    public ResponseEntity<Balance> getBalance(@RequestHeader("X-User-Id") String userId) {
+        return new ResponseEntity<>(balanceService.getBalance(userId), HttpStatus.OK);
+    }
 }

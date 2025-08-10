@@ -24,10 +24,12 @@ public class Balance {
     private LocalDateTime updatedAt;
 
     public void increase(double amount) {
-        setAmount(getAmount() + amount);
+        double updatedAmount = this.amount + amount;
+        setAmount(updatedAmount);
     }
 
     public void decrease(double amount) {
-        setAmount(getAmount() - amount);
+        double updatedAmount = this.amount - amount;
+        setAmount(updatedAmount);
     }
 }

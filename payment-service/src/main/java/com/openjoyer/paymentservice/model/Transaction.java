@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document("operations")
+@Document("transactions")
 public class Transaction {
     @Id
     private String id;

@@ -181,7 +181,7 @@ public class OrderService {
     }
 
     public List<SellerOrder> findArchivedSellerItems(String sellerId) {
-        List<OrderStatus> statuses = List.of(COMPLETED, CANCELED, REFUNDED, EXPIRED);
+        List<OrderStatus> statuses = List.of(RECEIVED, CANCELED, REFUNDED, EXPIRED);
         List<Order> orders = orderRepository.findOrderItemsBySellerId(sellerId).stream()
                 .filter(o -> statuses.contains(o.getStatus()))
                 .toList();
@@ -237,9 +237,9 @@ public class OrderService {
     }
 
     public ResponseEntity<?> payOrder(String userId, String trackingNo) {
-        Order order = orderRepository.findById(trackingNo).orElse(null);
+        Order order = orderRepository.findByTrackingNumber(trackingNo).orElse(null);
         if (order == null) {
-            return null;
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         double userBalance = paymentServiceClient.userBalance(userId);
         if (userBalance <= 0 || userBalance < order.getTotalAmount()) {

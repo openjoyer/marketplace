@@ -47,7 +47,8 @@ public class AuthFilter implements GlobalFilter {
             "/api/product/seller",
             "/api/cart",
             "/api/profile",
-            "/api/inventory"
+            "/api/inventory",
+            "/api/payment"
     );
     private final List<String> EMAIL_VERIFIED_URL_LIST = List.of(
             "/api/orders"

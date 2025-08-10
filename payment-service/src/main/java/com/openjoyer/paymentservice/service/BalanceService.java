@@ -15,29 +15,33 @@ import java.time.LocalDateTime;
 public class BalanceService {
     private final BalanceRepository balanceRepository;
 
-    public void createBalance(String userId) {
+    public Balance createBalance(String userId) {
         Balance balance = Balance.builder()
                 .userId(userId)
                 .amount(0.0)
                 .updatedAt(LocalDateTime.now())
                 .build();
-        balanceRepository.save(balance);
+        return balanceRepository.save(balance);
     }
 
     public Balance getBalance(String userId) {
-        return balanceRepository.findByUserId(userId).orElse(
-                new Balance(userId, 0.0, LocalDateTime.now())
-        );
+        return balanceRepository.findById(userId).orElse(null);
     }
 
     public Balance incrementBalance(String userId, double amount) {
         Balance balance = getBalance(userId);
+        if (balance == null) {
+            return null;
+        }
         balance.increase(amount);
         return balanceRepository.save(balance);
     }
 
     public Balance decrementBalance(String userId, double amount) throws BalanceException {
         Balance balance = getBalance(userId);
+        if (balance == null) {
+            return null;
+        }
         if (balance.getAmount() < amount) {
             throw new BalanceException("insufficient balance");
         }

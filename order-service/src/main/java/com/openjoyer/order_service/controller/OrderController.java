@@ -79,6 +79,7 @@ public class OrderController {
             return new ResponseEntity<>(handler, HttpStatus.FORBIDDEN);
         }
         boolean isDone = orderService.cancelOrder(order);
+        return new ResponseEntity<>(isDone, HttpStatus.OK);
     }
 
 

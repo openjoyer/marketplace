@@ -72,5 +72,3 @@ public class OrderEvent {
         private int postalCode;
     }
 }
-
-}
