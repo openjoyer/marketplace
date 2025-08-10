@@ -1,6 +1,8 @@
 package com.openjoyer.paymentservice.controller;
 
+import com.openjoyer.paymentservice.model.Balance;
 import com.openjoyer.paymentservice.model.PaymentStatus;
+import com.openjoyer.paymentservice.service.BalanceService;
 import com.openjoyer.paymentservice.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,25 +19,26 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class PaymentController {
     private final PaymentService paymentService;
+    private final BalanceService balanceService;
 
-    @GetMapping("/proceed")
-    public ResponseEntity<String> paymentProceed(@RequestParam("order") String orderId) {
-        PaymentStatus status = paymentService.confirmPayment(orderId);
-        if (status == PaymentStatus.SUCCEEDED) {
-            log.info("Payment successful: {}", orderId);
-        }
-        else if (status == PaymentStatus.CANCELLED) {
-            log.info("Payment cancelled: {}", orderId);
-        }
-        else if (status == PaymentStatus.EXPIRED) {
-            log.info("Payment expired: {}", orderId);
-        }
-        else if (status == PaymentStatus.ALREADY_COMPLETED) {
-            log.info("Payment already completed: {}", orderId);
-        }
-        else {
-            log.error("Payment is null: {}", orderId);
-        }
-        return new ResponseEntity<>(status.toString(), HttpStatus.OK);
-    }
+//    @GetMapping("/proceed")
+//    public ResponseEntity<String> paymentProceed(@RequestParam("order") String orderId) {
+//        PaymentStatus status = paymentService.confirmPayment(orderId);
+//        if (status == PaymentStatus.SUCCEEDED) {
+//            log.info("Payment successful: {}", orderId);
+//        }
+//        else if (status == PaymentStatus.CANCELLED) {
+//            log.info("Payment cancelled: {}", orderId);
+//        }
+//        else if (status == PaymentStatus.EXPIRED) {
+//            log.info("Payment expired: {}", orderId);
+//        }
+//        else if (status == PaymentStatus.ALREADY_COMPLETED) {
+//            log.info("Payment already completed: {}", orderId);
+//        }
+//        else {
+//            log.error("Payment is null: {}", orderId);
+//        }
+//        return new ResponseEntity<>(status.toString(), HttpStatus.OK);
+//    }
 }

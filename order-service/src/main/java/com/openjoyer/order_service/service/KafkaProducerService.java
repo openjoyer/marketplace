@@ -20,13 +20,8 @@ public class KafkaProducerService {
         kafkaTemplate.send("order-created", json);
     }
 
-    public void sendOrder(OrderEvent event) throws JsonProcessingException {
-        String jsonEvent = objectMapper.writeValueAsString(event);
-        kafkaTemplate.send("order_topic", jsonEvent);
-    }
-
-    public void sendOrder(String topic, String key, OrderEvent event) throws JsonProcessingException {
-        String jsonEvent = objectMapper.writeValueAsString(event);
-        kafkaTemplate.send(topic, key, jsonEvent);
+    public void sendOrderCanceled(OrderEvent orderEvent) throws JsonProcessingException {
+        String jsonEvent = objectMapper.writeValueAsString(orderEvent);
+        kafkaTemplate.send("order-canceled", jsonEvent);
     }
 }

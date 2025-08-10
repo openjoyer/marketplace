@@ -15,10 +15,10 @@ public class KafkaProducerService {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    public void sendPaymentCreated(Payment payment) throws JsonProcessingException {
-        String json = objectMapper.writeValueAsString(payment);
-        kafkaTemplate.send("payment-created", json);
-    }
+//    public void sendPaymentCreated(Payment payment) throws JsonProcessingException {
+//        String json = objectMapper.writeValueAsString(payment);
+//        kafkaTemplate.send("payment-created", json);
+//    }
 
     public void sendPaymentSuccess(Payment payment) throws JsonProcessingException {
         String json = objectMapper.writeValueAsString(payment);
@@ -30,9 +30,9 @@ public class KafkaProducerService {
         kafkaTemplate.send("payment-expired", json);
     }
 
-    public void sendPaymentCancelled(Payment payment) throws JsonProcessingException {
-        String json = objectMapper.writeValueAsString(payment);
-        kafkaTemplate.send("payment-cancelled", json);
-    }
+//    public void sendPaymentCancelled(Payment payment) throws JsonProcessingException {
+//        String json = objectMapper.writeValueAsString(payment);
+//        kafkaTemplate.send("payment-cancelled", json);
+//    }
 
 }

@@ -34,21 +34,21 @@ public class KafkaConsumerService {
     }
 
 
-    @KafkaListener(
-            topics = "payment-cancelled",
-            groupId = "order-group",
-            containerFactory = "kafkaListenerContainerFactory"
-    )
-    public void paymentCancelled(String json, Acknowledgment ack) {
-        try {
-            PaymentEvent payment = objectMapper.readValue(json, PaymentEvent.class);
-            log.info("Received payment success event: {}", payment.getOrderId());
-            orderService.updateStatus(payment.getOrderId().substring(0,8), OrderStatus.CANCELED);
-            ack.acknowledge();
-        } catch (JsonProcessingException e) {
-            log.error("error parsing PaymentEvent: {}", e.getMessage());
-        }
-    }
+//    @KafkaListener(
+//            topics = "payment-cancelled",
+//            groupId = "order-group",
+//            containerFactory = "kafkaListenerContainerFactory"
+//    )
+//    public void paymentCancelled(String json, Acknowledgment ack) {
+//        try {
+//            PaymentEvent payment = objectMapper.readValue(json, PaymentEvent.class);
+//            log.info("Received payment success event: {}", payment.getOrderId());
+//            orderService.updateStatus(payment.getOrderId().substring(0,8), OrderStatus.CANCELED);
+//            ack.acknowledge();
+//        } catch (JsonProcessingException e) {
+//            log.error("error parsing PaymentEvent: {}", e.getMessage());
+//        }
+//    }
 
     @KafkaListener(
             topics = "payment-expired",

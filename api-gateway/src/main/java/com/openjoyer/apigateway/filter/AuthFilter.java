@@ -59,6 +59,7 @@ public class AuthFilter implements GlobalFilter {
             "/api/auth/internal",
             "/api/orders/internal",
             "/api/inventory/internal",
+            "/api/payment/internal",
             "/api/product/seller",
             "/api/orders/seller",
             "/api/profile/confirmation-token"

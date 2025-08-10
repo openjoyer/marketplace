@@ -34,14 +34,15 @@ public class KafkaService {
             OrderEvent event = objectMapper.readValue(json, OrderEvent.class);
             log.info("Received order event: {}", event.getId());
 
-            String emailContent = String.format("Dear user, your order has been created! Tracking number: %s",
-                    event.getTrackingNumber());
+            Context context = new Context();
+            context.setVariable("orderId", event.getTrackingNumber());
+            String htmlContent = templateEngine.process("email/order-created.html", context);
 
             NotificationRequest request = new NotificationRequest(
                     NotificationType.EMAIL,
                     "ORDER CREATED",
-                    emailContent,
-                    false,
+                    htmlContent,
+                    true,
                     event.getUserEmail()
             );
             notificationService.sendNotification(request);
@@ -52,34 +53,62 @@ public class KafkaService {
     }
 
     @KafkaListener(
-            topics = "payment-created",
+            topics = "order-canceled",
             groupId = "notification-group",
             containerFactory = "kafkaListenerContainerFactory"
     )
-    public void consumePaymentCreated(String json, Acknowledgment ack) {
+    public void consumeOrderCancelled(String json, Acknowledgment ack) {
         try {
-            PaymentEvent payment = objectMapper.readValue(json, PaymentEvent.class);
-            log.info("Received payment event: {}", payment.getId());
+            OrderEvent event = objectMapper.readValue(json, OrderEvent.class);
+            log.info("Received order event: {}", event.getId());
 
             Context context = new Context();
-            context.setVariable("orderId", payment.getOrderId().substring(0, 8));
-            String link = "http://localhost:8070/api/payment/proceed?order=" + payment.getOrderId();
-            context.setVariable("paymentLink", link);
-            String html = templateEngine.process("email/payment.html", context);
+            context.setVariable("orderId", event.getTrackingNumber());
+            String htmlContent = templateEngine.process("email/order-cancelled.html", context);
 
             NotificationRequest request = new NotificationRequest(
                     NotificationType.EMAIL,
-                    "ORDER PAYMENT",
-                    html,
+                    "ORDER CANCELED",
+                    htmlContent,
                     true,
-                    payment.getBuyerEmail()
+                    event.getUserEmail()
             );
             notificationService.sendNotification(request);
             ack.acknowledge();
         } catch (JsonProcessingException e) {
-            log.error("Failed to parse PaymentEvent: {}", e.getMessage());
+            log.error("Failed to parse OrderEvent: {}", e.getMessage());
         }
     }
+
+//    @KafkaListener(
+//            topics = "payment-created",
+//            groupId = "notification-group",
+//            containerFactory = "kafkaListenerContainerFactory"
+//    )
+//    public void consumePaymentCreated(String json, Acknowledgment ack) {
+//        try {
+//            PaymentEvent payment = objectMapper.readValue(json, PaymentEvent.class);
+//            log.info("Received payment event: {}", payment.getId());
+//
+//            Context context = new Context();
+//            context.setVariable("orderId", payment.getOrderId().substring(0, 8));
+//            String link = "http://localhost:8070/api/payment/proceed?order=" + payment.getOrderId();
+//            context.setVariable("paymentLink", link);
+//            String html = templateEngine.process("email/payment.html", context);
+//
+//            NotificationRequest request = new NotificationRequest(
+//                    NotificationType.EMAIL,
+//                    "ORDER PAYMENT",
+//                    html,
+//                    true,
+//                    payment.getBuyerEmail()
+//            );
+//            notificationService.sendNotification(request);
+//            ack.acknowledge();
+//        } catch (JsonProcessingException e) {
+//            log.error("Failed to parse PaymentEvent: {}", e.getMessage());
+//        }
+//    }
 
     @KafkaListener(
             topics = "order_confirm_email",

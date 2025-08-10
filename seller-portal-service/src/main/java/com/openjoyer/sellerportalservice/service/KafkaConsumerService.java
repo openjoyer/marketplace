@@ -22,7 +22,7 @@ public class KafkaConsumerService {
     }
 
     @KafkaListener(
-            topics = "payment-sucess",
+            topics = "payment-success",
             groupId = "seller-portal-group",
             containerFactory = "kafkaListenerContainerFactory"
     )

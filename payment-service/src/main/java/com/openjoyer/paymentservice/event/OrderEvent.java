@@ -44,14 +44,12 @@ public class OrderEvent {
 
     public enum OrderStatus {
         CREATED,
-        AWAITING_PAYMENT,
         PAID,
         PROCESSING,
         PACKED,
         IN_DELIVERY,
         DELIVERED,
         RECEIVED,
-        COMPLETED,
         CANCELED,
         REFUNDED,
         EXPIRED

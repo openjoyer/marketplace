@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.openjoyer.order_service.dto.SellerOrder;
 import com.openjoyer.order_service.dto.Cart;
 import com.openjoyer.order_service.events.OrderEvent;
+import com.openjoyer.order_service.events.PaymentEvent;
+import com.openjoyer.order_service.exceptions.ResponseHandler;
+import com.openjoyer.order_service.feign_clients.PaymentServiceClient;
 import com.openjoyer.order_service.model.Address;
 import com.openjoyer.order_service.model.Order;
 import com.openjoyer.order_service.model.OrderItem;
@@ -11,6 +14,8 @@ import com.openjoyer.order_service.model.OrderStatus;
 import com.openjoyer.order_service.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -29,6 +34,14 @@ import static com.openjoyer.order_service.model.OrderStatus.*;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final KafkaProducerService kafkaProducerService;
+    private final PaymentServiceClient paymentServiceClient;
+
+    private static final List<OrderStatus> cannotCancelStatuses = List.of(
+            RECEIVED,
+            CANCELED,
+            REFUNDED,
+            EXPIRED
+    );
 
     public OrderEvent createOrder(String userEmail, Address address, Cart cart) {
         LocalDateTime now = LocalDateTime.now();
@@ -139,6 +152,21 @@ public class OrderService {
         return orderEvent;
     }
 
+    private Order mapToOrder(OrderEvent orderEvent) {
+        Order order = new Order();
+        order.setId(orderEvent.getId());
+        order.setUserId(orderEvent.getUserId());
+        order.setDeliveryAddress(orderEvent.getDeliveryAddress());
+        order.setTotalAmount(orderEvent.getTotalAmount());
+        order.setCreatedAt(orderEvent.getCreatedAt());
+        order.setUpdatedAt(orderEvent.getUpdatedAt());
+        order.setItems(orderEvent.getItems());
+        order.setStatus(orderEvent.getStatus());
+        order.setTrackingNumber(orderEvent.getTrackingNumber());
+        order.setEstimatedDeliveryDate(orderEvent.getEstimatedDeliveryDate());
+        return order;
+    }
+
     public List<SellerOrder> findAllSellerItems(String sellerId) {
         List<Order> orders = orderRepository.findOrderItemsBySellerId(sellerId);
         return getSellerOrders(sellerId, orders);
@@ -188,5 +216,39 @@ public class OrderService {
         sellerOrder.setOrderStatus(order.getStatus());
         sellerOrder.setCreatedAt(order.getCreatedAt());
         return sellerOrder;
+    }
+
+    public boolean cancelOrder(OrderEvent event) {
+        if (cannotCancelStatuses.contains(event.getStatus())) {
+            return false;
+        }
+        try {
+            kafkaProducerService.sendOrderCanceled(event);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to send order canceled event", e);
+            return false;
+        }
+
+        event.setStatus(CANCELED);
+        event.setUpdatedAt(LocalDateTime.now());
+        orderRepository.save(mapToOrder(event));
+        log.info("Order {} has been cancelled", event.getTrackingNumber());
+        return true;
+    }
+
+    public ResponseEntity<?> payOrder(String userId, String trackingNo) {
+        Order order = orderRepository.findById(trackingNo).orElse(null);
+        if (order == null) {
+            return null;
+        }
+        double userBalance = paymentServiceClient.userBalance(userId);
+        if (userBalance <= 0 || userBalance < order.getTotalAmount()) {
+            ResponseHandler handler = new ResponseHandler(400,
+                    "user balance not enough",
+                    LocalDateTime.now());
+            return new ResponseEntity<>(handler, HttpStatus.BAD_REQUEST);
+        }
+        PaymentEvent.PaymentStatus status = paymentServiceClient.pay(userId, order.getId());
+        return new ResponseEntity<>(status, HttpStatus.OK);
     }
 }

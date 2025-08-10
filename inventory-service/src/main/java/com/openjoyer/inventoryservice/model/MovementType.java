@@ -5,5 +5,6 @@ public enum MovementType {
     RESERVE,
     RESERVE_CANCEL,
     ORDER,
+    ORDER_CANCEL,
     RETURN
 }

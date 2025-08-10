@@ -6,4 +6,6 @@ public enum PaymentStatus {
     EXPIRED,
     CANCELLED,
     ALREADY_COMPLETED,
+    RETURNED,
+    INSUFFICIENT_BALANCE
 }
