@@ -3,6 +3,7 @@ package com.openjoyer.marketplace.profile_service.service;
 import com.openjoyer.marketplace.profile_service.dto.ResponseProfile;
 import com.openjoyer.marketplace.profile_service.exceptions.AddressExistsException;
 import com.openjoyer.marketplace.profile_service.exceptions.EmailExistsException;
+import com.openjoyer.marketplace.profile_service.feign_clients.PaymentServiceClient;
 import com.openjoyer.marketplace.profile_service.model.Address;
 import com.openjoyer.marketplace.profile_service.model.Profile;
 import com.openjoyer.marketplace.profile_service.exceptions.ProfileNotFoundException;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class ProfileService {
 
     private final ProfileRepository profileRepository;
+    private final PaymentServiceClient paymentServiceClient;
 
     public void save(Profile profile) {
         if (profileRepository.findByEmail(profile.getEmail()).isPresent()) {
@@ -29,6 +31,8 @@ public class ProfileService {
         profile.setCreatedAt(LocalDateTime.now());
         profileRepository.save(profile);
         log.info("profile created: {}", profile.getId());
+
+        paymentServiceClient.initBalance(profile.getId());
     }
 
     public ResponseProfile getProfile(String id) throws ProfileNotFoundException {

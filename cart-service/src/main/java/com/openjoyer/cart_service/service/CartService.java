@@ -61,10 +61,6 @@ public class CartService {
         clearCart(paymentEvent.getBuyerId());
     }
 
-    public void saveCart(Cart cart) {
-        cartRepository.save(cart);
-    }
-
     public List<Cart> findByProductId(String productId) {
         return cartRepository.findByProductId(productId);
     }

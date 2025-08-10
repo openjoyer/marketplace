@@ -6,6 +6,7 @@ import com.openjoyer.order_service.events.OrderEvent;
 import com.openjoyer.order_service.exceptions.ResponseHandler;
 import com.openjoyer.order_service.feign_clients.CartServiceClient;
 import com.openjoyer.order_service.feign_clients.InventoryServiceClient;
+import com.openjoyer.order_service.feign_clients.PaymentServiceClient;
 import com.openjoyer.order_service.feign_clients.ProfileServiceClient;
 import com.openjoyer.order_service.model.Address;
 import com.openjoyer.order_service.model.OrderStatus;
@@ -39,11 +40,6 @@ public class OrderController {
         if (inventoryResponse.getStatusCode() != HttpStatus.OK) {
             return new ResponseEntity<>(inventoryResponse.getBody(), inventoryResponse.getStatusCode());
         }
-//        List<CartItem> reserveList = inventoryResponse.getBody();
-//
-//        if (!reserveList.isEmpty()) {
-//            return new ResponseEntity<>(reserveList, HttpStatus.BAD_REQUEST);
-//        }
         String email = profileServiceClient.getProfileEmail(userId);
         Address address = profileServiceClient.getAddress(userId);
         OrderEvent orderEvent = orderService.createOrder(email, address, cart);
@@ -55,6 +51,34 @@ public class OrderController {
         }
         return new ResponseEntity<>(orderEvent, HttpStatus.CREATED);
 
+    }
+
+    @PostMapping("/pay")
+    public ResponseEntity<?> payOrder(@RequestHeader("X-User-Id") String userId,
+                                      @RequestParam("track") String trackingNo) {
+        return orderService.payOrder(userId, trackingNo);
+    }
+
+    @PostMapping("/cancel")
+    public ResponseEntity<?> cancelOrder(@RequestHeader("X-User-Id") String userId,
+                                         @RequestParam("track") String trackingNo) {
+        if (trackingNo.length() > 8) {
+            // Костыль для приведения айдишника к трек-номеру
+            trackingNo = trackingNo.substring(0, 8);
+        }
+        OrderEvent order = orderService.findByTrackingNumber(trackingNo);
+        if (order == null) {
+            ResponseHandler handler = new ResponseHandler(404,
+                    "order not found: "+ trackingNo,
+                    LocalDateTime.now());
+            return new ResponseEntity<>(handler, HttpStatus.NOT_FOUND);
+        } else if (!order.getUserId().equals(userId)) {
+            ResponseHandler handler = new ResponseHandler(403,
+                    "access denied: you can not access others' orders",
+                    LocalDateTime.now());
+            return new ResponseEntity<>(handler, HttpStatus.FORBIDDEN);
+        }
+        boolean isDone = orderService.cancelOrder(order);
     }
 
 

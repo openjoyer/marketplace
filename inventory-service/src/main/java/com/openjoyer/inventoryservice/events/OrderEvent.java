@@ -1,4 +1,4 @@
-package com.openjoyer.notificationservice.events;
+package com.openjoyer.inventoryservice.events;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -71,6 +71,4 @@ public class OrderEvent {
         @JsonProperty("postal_code")
         private int postalCode;
     }
-}
-
 }

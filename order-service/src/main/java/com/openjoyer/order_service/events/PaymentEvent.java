@@ -52,5 +52,8 @@ public class PaymentEvent {
         SUCCEEDED,
         EXPIRED,
         CANCELLED,
+        ALREADY_COMPLETED,
+        RETURNED,
+        INSUFFICIENT_BALANCE
     }
 }

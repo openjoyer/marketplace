@@ -1,4 +1,4 @@
-package com.openjoyer.order_service.config;
+package com.openjoyer.marketplace.profile_service.config;
 
 import feign.RequestInterceptor;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +15,7 @@ public class FeignConfig {
     @Bean
     public RequestInterceptor internalAuthInterceptor() {
         return requestTemplate -> {
-            if (requestTemplate.url().contains("/api/inventory/reserve") ||
-                    requestTemplate.url().contains("/api/payment/internal")) {
+            if (requestTemplate.url().contains("/api/payment/internal")) {
                 String key = env.getProperty("app.internal.secret");
                 requestTemplate.header("X-Internal-Request", key);
             }

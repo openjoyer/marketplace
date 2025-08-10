@@ -3,6 +3,7 @@ package com.openjoyer.inventoryservice.service;
 import com.openjoyer.inventoryservice.dto.CartItem;
 import com.openjoyer.inventoryservice.dto.InventoryRequest;
 import com.openjoyer.inventoryservice.dto.SellerResponseProduct;
+import com.openjoyer.inventoryservice.events.OrderEvent;
 import com.openjoyer.inventoryservice.events.PaymentEvent;
 import com.openjoyer.inventoryservice.events.StockEvent;
 import com.openjoyer.inventoryservice.feign_clients.ProductServiceClient;
@@ -107,6 +108,26 @@ public class InventoryService {
                         .delta(item.getQuantity())
                         .movementType(MovementType.RESERVE_CANCEL)
                         .userId(paymentEvent.getBuyerId())
+                        .date(LocalDate.now())
+                        .build();
+                i.addMovement(movement);
+                inventoryRepository.save(i);
+            }
+        }
+    }
+
+    public void handleOrderCancel(OrderEvent orderEvent) {
+        for (OrderEvent.OrderItem item : orderEvent.getItems()) {
+            Inventory i =  inventoryRepository.findByProductId(item.getProductId()).orElse(null);
+            if (i != null) {
+                i.setAvailableQuantity(i.getAvailableQuantity() + item.getQuantity());
+                if (orderEvent.getStatus() == OrderEvent.OrderStatus.CREATED) {
+                    i.setReservedQuantity(i.getReservedQuantity() - item.getQuantity());
+                }
+                Movement movement = Movement.builder()
+                        .delta(item.getQuantity())
+                        .movementType(MovementType.ORDER_CANCEL)
+                        .userId(orderEvent.getUserId())
                         .date(LocalDate.now())
                         .build();
                 i.addMovement(movement);

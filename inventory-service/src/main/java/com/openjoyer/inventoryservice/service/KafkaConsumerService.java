@@ -2,6 +2,7 @@ package com.openjoyer.inventoryservice.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openjoyer.inventoryservice.events.OrderEvent;
 import com.openjoyer.inventoryservice.events.PaymentEvent;
 import com.openjoyer.inventoryservice.events.StockEvent;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +52,7 @@ public class KafkaConsumerService {
     }
 
     @KafkaListener(
-            topics = {"payment-cancelled", "payment-expired"},
+            topics = "payment-expired",
             groupId = "inventory-group",
             containerFactory = "kafkaListenerContainerFactory"
     )
@@ -64,6 +65,20 @@ public class KafkaConsumerService {
             acknowledgment.acknowledge();
         } catch (JsonProcessingException e) {
             log.error("json parse error: {}", e.getMessage());
+        }
+    }
+
+    @KafkaListener(
+            topics = "order-canceled",
+            groupId = "inventory-group",
+            containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void orderCanceled(String json) {
+        try {
+            OrderEvent orderEvent = objectMapper.readValue(json, OrderEvent.class);
+            inventoryService.handleOrderCancel(orderEvent);
+        } catch (JsonProcessingException e) {
+            log.error("error processing order event: {}", e.getMessage());
         }
     }
 }

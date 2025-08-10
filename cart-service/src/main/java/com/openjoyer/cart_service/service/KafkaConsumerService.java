@@ -33,7 +33,6 @@ public class KafkaConsumerService {
         } catch (JsonProcessingException e) {
             log.error("Failed to parse payment event: {}", e.getMessage());
         }
-
     }
 
 //    @KafkaListener(
