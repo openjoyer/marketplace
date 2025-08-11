@@ -22,7 +22,7 @@ public class PaymentController {
     @PostMapping("/balance")
     public ResponseEntity<Balance> creditMoney(@RequestHeader("X-User-Id") String userId,
                                                @RequestBody double amount) {
-        return new ResponseEntity<>(balanceService.incrementBalance(userId, amount), HttpStatus.OK);
+        return new ResponseEntity<>(paymentService.creditMoney(userId, amount), HttpStatus.OK);
     }
 
     @GetMapping("/balance")

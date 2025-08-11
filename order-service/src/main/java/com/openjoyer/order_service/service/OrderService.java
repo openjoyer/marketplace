@@ -126,6 +126,9 @@ public class OrderService {
         if (order == null) {
             throw new IllegalArgumentException("order not found");
         }
+        if (orderStatus.equals(OrderStatus.RECEIVED)) {
+            paymentServiceClient.processOrderReceived(mapToOrderEvent(order, null));
+        }
         order.setStatus(orderStatus);
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
@@ -143,7 +146,7 @@ public class OrderService {
         orderEvent.setUserEmail(email);
         orderEvent.setTotalAmount(order.getTotalAmount());
         orderEvent.setCreatedAt(order.getCreatedAt());
-        orderEvent.setUpdatedAt(LocalDateTime.now());
+        orderEvent.setUpdatedAt(order.getUpdatedAt());
         orderEvent.setItems(order.getItems());
         orderEvent.setStatus(order.getStatus());
         orderEvent.setTrackingNumber(order.getTrackingNumber());

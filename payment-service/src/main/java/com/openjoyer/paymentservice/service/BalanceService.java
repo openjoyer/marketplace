@@ -49,7 +49,7 @@ public class BalanceService {
         return balanceRepository.save(balance);
     }
 
-    public Balance clearBalance(String userId) {
+    public Balance resetBalance(String userId) {
         Balance balance = getBalance(userId);
         balance.setAmount(0);
         return balanceRepository.save(balance);

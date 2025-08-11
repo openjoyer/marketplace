@@ -18,7 +18,6 @@ public class SellerResponseProduct {
     private String category;
     private int price;
     private double rating;
-    private int stock;
     private String sellerId;
     private int sellsCount;
     private int returnsCount;

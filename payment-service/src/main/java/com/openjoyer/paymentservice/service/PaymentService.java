@@ -119,6 +119,17 @@ public class PaymentService {
         return PaymentStatus.SUCCEEDED;
     }
 
+    public Balance creditMoney(String userId, double amount) {
+        Balance balance = balanceService.incrementBalance(userId, amount);
+        TransactionRequest request = TransactionRequest.builder()
+                .transactionType(TransactionType.USER_CREDIT)
+                .amount(amount)
+                .userId(userId)
+                .build();
+        transactionService.create(request);
+        return balance;
+    }
+
     public void cancelAction(OrderEvent orderEvent) {
         Payment payment = getByOrderId(orderEvent.getId());
         if (payment == null) {
@@ -139,6 +150,25 @@ public class PaymentService {
 
     public void returnAction(OrderEvent orderEvent) {
 
+    }
+
+    public void processOrderReceived(OrderEvent orderEvent) {
+        TransactionRequest user = TransactionRequest.builder()
+                .transactionType(TransactionType.USER_UNHOLD)
+                .userId(orderEvent.getUserId())
+                .amount(orderEvent.getTotalAmount())
+                .build();
+        transactionService.create(user);
+
+        for (OrderEvent.OrderItem orderItem : orderEvent.getItems()) {
+            balanceService.incrementBalance(orderItem.getSellerId(), orderItem.getPrice());
+            TransactionRequest sellerItem = TransactionRequest.builder()
+                    .transactionType(TransactionType.SELLER_INCOME)
+                    .userId(orderItem.getSellerId())
+                    .amount(orderItem.getPrice() * orderItem.getQuantity())
+                    .build();
+            transactionService.create(sellerItem);
+        }
     }
 
     private void createUserReturn(OrderEvent orderEvent) {
